@@ -20,5 +20,3 @@ The system will process video files and provide audio descriptions by summarizin
 ## Future Work
 - Implementing deep learning models for video understanding
 - Exploring text-to-speech synthesis for dynamic narration
-# accessible-Cinema
-This project aims to develop an AI-powered model that generates audio descriptions for movies, making them more accessible to visually impaired audiences.
