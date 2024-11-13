@@ -13,7 +13,7 @@ The system will process video files and provide audio descriptions by summarizin
 
 ## Setup Instructions
 1. Clone the repository:  
-   `git clone https://github.com/your-username/MovieAudioDescriber.git`
+   `git clone https://github.com/bhuvika-agrawal/accessible-cinema.git`
 2. Install the required dependencies:  
    `pip install -r requirements.txt`
 
