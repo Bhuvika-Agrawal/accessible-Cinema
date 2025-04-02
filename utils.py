@@ -39,7 +39,7 @@ def check_similarity(img1, img2, threshold=0.75):
     ssim_value, diff = ssim(img1, img2, multichannel=True, channel_axis=2, full=True)
     return ssim_value >= threshold
 
-def make_chunks(frames, frame_rate.75):
+def make_chunks(frames, frame_rate):
     """
     Split frames into chunks of frames based on the temperal similarity.
     """
