@@ -3,13 +3,13 @@ from tqdm import tqdm
 import utils
 import io
 import base64
+import cv2
 from PIL import Image
 from langchain_google_genai import GoogleGenerativeAI
 from langchain.schema import HumanMessage
 from langchain.schema.messages import AIMessage, SystemMessage
 
-llm = GoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.5)
-
+llm = GoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0.8)
 def process_chunk(images):
     frames={}
     for i, image in enumerate(images):
@@ -25,18 +25,41 @@ def process_chunk(images):
     response = llm.invoke(messages)
     return response
 
-def generate_description(video_path, start_frame=0, end_frame=None):
-    # Load the video and extract frames
-    video_path = video_path
-    frames, framerate = utils.load_video(video_path, start_frame, end_frame)
-    
-    # Split the frames into chunks based on temporal similarity
-    chunks, timestamps = utils.make_chunks(frames, framerate)
+def generate_description(video_path, start_frame=0, end_frame=None, threshold=0.75):
+    video=cv2.VideoCapture(video_path)
+    if not video.isOpened():
+        raise Exception("Could not open video file")
+    framerate=video.get(cv2.CAP_PROP_FPS)
+    print(f"Video framerate: {framerate}")
+    framecount=int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(f"Total frames: {framecount}")
+    video.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+    if end_frame is None:
+        end_frame=framecount
+    else:
+        end_frame=min(end_frame, framecount)
+    ret, frame = video.read()
+    current_chunk=[frame]
+    timestamp=start_frame/framerate
     descriptions=[]
+    timestamps=[]
     
-    # Process each chunk and generate descriptions
     print("Generating descriptions...")
-    for i, chunk in tqdm(enumerate(chunks)):
-        description = process_chunk(chunk)
+    for i in tqdm(range(start_frame+1, end_frame)):
+        ret, frame = video.read()
+        if not ret:
+            break
+        if utils.check_similarity(frame, current_chunk[-1], threshold):
+            current_chunk.append(frame)
+        else:
+            description=process_chunk(current_chunk)
+            descriptions.append(description)
+            timestamps.append(timestamp)
+            current_chunk=[frame]
+            timestamp=i/framerate
+    if current_chunk:
+        description=process_chunk(current_chunk)
         descriptions.append(description)
+        timestamps.append(timestamp)
+    video.release()
     return descriptions, timestamps
