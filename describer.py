@@ -13,8 +13,9 @@ llm = GoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0.8)
 def process_chunk(images):
     frames={}
     for i, image in enumerate(images):
+        img=cv2.resize(image, (256,144))
         buffer=io.BytesIO()
-        img = Image.fromarray(image)
+        img = Image.fromarray(img)
         img.save(buffer, format="JPEG")
         buffer.seek(0)
         frame=base64.b64encode(buffer.read()).decode('utf-8')
